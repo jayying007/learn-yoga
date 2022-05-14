@@ -142,6 +142,7 @@ static YGConfigRef globalConfig;
   globalConfig = YGConfigNew();
   YGConfigSetExperimentalFeatureEnabled(globalConfig, YGExperimentalFeatureWebFlexBasis, true);
   YGConfigSetPointScaleFactor(globalConfig, [UIScreen mainScreen].scale);
+    YGConfigSetPrintTreeFlag(globalConfig, true);
 }
 
 - (instancetype)initWithView:(UIView *)view {

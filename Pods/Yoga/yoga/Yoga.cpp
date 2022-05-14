@@ -1058,25 +1058,36 @@ static inline float YGNodeDimWithMargin(
           .unwrap();
 }
 
-/// 检测是否有定义确切的尺寸
-/// @param node <#node description#>
-/// @param axis <#axis description#>
-/// @param ownerSize <#ownerSize description#>
+/// 检测Node是否有定义确切的尺寸
+/// @param node 对应的YGNode
+/// @param axis 对应轴
+/// @param ownerSize node大小
 static inline bool YGNodeIsStyleDimDefined(
     const YGNodeRef node,
     const YGFlexDirection axis,
     const float ownerSize) {
-  bool isUndefined =
-      YGFloatIsUndefined(node->getResolvedDimension(dim[axis]).value);
-  return !(
-      node->getResolvedDimension(dim[axis]).unit == YGUnitAuto ||
-      node->getResolvedDimension(dim[axis]).unit == YGUnitUndefined ||
-      (node->getResolvedDimension(dim[axis]).unit == YGUnitPoint &&
-       !isUndefined && node->getResolvedDimension(dim[axis]).value < 0.0f) ||
-      (node->getResolvedDimension(dim[axis]).unit == YGUnitPercent &&
-       !isUndefined &&
-       (node->getResolvedDimension(dim[axis]).value < 0.0f ||
-        YGFloatIsUndefined(ownerSize))));
+    YGValue value = node->getResolvedDimension(dim[axis]);
+    if (value.unit == YGUnitAuto || value.unit == YGUnitUndefined) {
+        return false;
+    }
+    
+    bool isDefined = (YGFloatIsUndefined(value.value) == false);
+    if (value.unit == YGUnitPoint) {
+        if (isDefined && value.value < 0.0f) {
+            return false;
+        }
+        return true;
+    }
+    
+    if (value.unit == YGUnitPercent) {
+        //percent类型的value，需要依赖ownerSize定义
+        if (isDefined && (value.value < 0.0f || YGFloatIsUndefined(ownerSize))) {
+            return false;
+        }
+        return true;
+    }
+    
+    return false;
 }
 
 static inline bool YGNodeIsLayoutDimDefined(
@@ -1086,6 +1097,11 @@ static inline bool YGNodeIsLayoutDimDefined(
   return !YGFloatIsUndefined(value) && value >= 0.0f;
 }
 
+/// 对value做min和max的比较，计算最终结果
+/// @param node 关联node
+/// @param axis 哪个方向
+/// @param value 初始值
+/// @param axisSize 这个方向的大小
 static YGFloatOptional YGNodeBoundAxisWithinMinAndMax(
     const YGNodeRef node,
     const YGFlexDirection axis,
@@ -1095,15 +1111,11 @@ static YGFloatOptional YGNodeBoundAxisWithinMinAndMax(
   YGFloatOptional max;
 
   if (YGFlexDirectionIsColumn(axis)) {
-    min = YGResolveValue(
-        node->getStyle().minDimensions[YGDimensionHeight], axisSize);
-    max = YGResolveValue(
-        node->getStyle().maxDimensions[YGDimensionHeight], axisSize);
+    min = YGResolveValue(node->getStyle().minDimensions[YGDimensionHeight], axisSize);
+    max = YGResolveValue(node->getStyle().maxDimensions[YGDimensionHeight], axisSize);
   } else if (YGFlexDirectionIsRow(axis)) {
-    min = YGResolveValue(
-        node->getStyle().minDimensions[YGDimensionWidth], axisSize);
-    max = YGResolveValue(
-        node->getStyle().maxDimensions[YGDimensionWidth], axisSize);
+    min = YGResolveValue(node->getStyle().minDimensions[YGDimensionWidth], axisSize);
+    max = YGResolveValue(node->getStyle().maxDimensions[YGDimensionWidth], axisSize);
   }
 
   if (max >= YGFloatOptional{0} && value > max) {
@@ -1119,17 +1131,16 @@ static YGFloatOptional YGNodeBoundAxisWithinMinAndMax(
 
 // Like YGNodeBoundAxisWithinMinAndMax but also ensures that the value doesn't
 // go below the padding and border amount.
+/// 相当于对YGNodeBoundAxisWithinMinAndMax的包装，但同时也确保最终的计算结果不小于padding和border的和
+/// 也就是说，假设这里是计算width，如果padding+border > maxWidth，实际最终width会选择padding+border
 static inline float YGNodeBoundAxis(
     const YGNodeRef node,
     const YGFlexDirection axis,
     const float value,
     const float axisSize,
     const float widthSize) {
-  return YGFloatMax(
-      YGNodeBoundAxisWithinMinAndMax(
-          node, axis, YGFloatOptional{value}, axisSize)
-          .unwrap(),
-      YGNodePaddingAndBorderForAxis(node, axis, widthSize));
+    return YGFloatMax(YGNodeBoundAxisWithinMinAndMax(node, axis, YGFloatOptional{value}, axisSize).unwrap(),
+                      YGNodePaddingAndBorderForAxis(node, axis, widthSize));
 }
 
 static void YGNodeSetChildTrailingPosition(
@@ -1563,19 +1574,12 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
     const YGMeasureMode heightMeasureMode,
     const float ownerWidth,
     const float ownerHeight) {
-  YGAssertWithNode(
-      node,
-      node->hasMeasureFunc(),
-      "Expected node to have custom measure function");
+  YGAssertWithNode(node, node->hasMeasureFunc(), "Expected node to have custom measure function");
 
-  const float paddingAndBorderAxisRow =
-      YGNodePaddingAndBorderForAxis(node, YGFlexDirectionRow, availableWidth);
-  const float paddingAndBorderAxisColumn = YGNodePaddingAndBorderForAxis(
-      node, YGFlexDirectionColumn, availableWidth);
-  const float marginAxisRow =
-      node->getMarginForAxis(YGFlexDirectionRow, availableWidth).unwrap();
-  const float marginAxisColumn =
-      node->getMarginForAxis(YGFlexDirectionColumn, availableWidth).unwrap();
+  const float paddingAndBorderAxisRow = YGNodePaddingAndBorderForAxis(node, YGFlexDirectionRow, availableWidth);
+  const float paddingAndBorderAxisColumn = YGNodePaddingAndBorderForAxis(node, YGFlexDirectionColumn, availableWidth);
+  const float marginAxisRow = node->getMarginForAxis(YGFlexDirectionRow, availableWidth).unwrap();
+  const float marginAxisColumn = node->getMarginForAxis(YGFlexDirectionColumn, availableWidth).unwrap();
 
   // We want to make sure we don't call measure with negative size
   const float innerWidth = YGFloatIsUndefined(availableWidth)
@@ -1583,8 +1587,7 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
       : YGFloatMax(0, availableWidth - marginAxisRow - paddingAndBorderAxisRow);
   const float innerHeight = YGFloatIsUndefined(availableHeight)
       ? availableHeight
-      : YGFloatMax(
-            0, availableHeight - marginAxisColumn - paddingAndBorderAxisColumn);
+      : YGFloatMax(0, availableHeight - marginAxisColumn - paddingAndBorderAxisColumn);
 
   if (widthMeasureMode == YGMeasureModeExactly &&
       heightMeasureMode == YGMeasureModeExactly) {
@@ -1652,14 +1655,10 @@ static void YGNodeEmptyContainerSetMeasuredDimensions(
     const YGMeasureMode heightMeasureMode,
     const float ownerWidth,
     const float ownerHeight) {
-  const float paddingAndBorderAxisRow =
-      YGNodePaddingAndBorderForAxis(node, YGFlexDirectionRow, ownerWidth);
-  const float paddingAndBorderAxisColumn =
-      YGNodePaddingAndBorderForAxis(node, YGFlexDirectionColumn, ownerWidth);
-  const float marginAxisRow =
-      node->getMarginForAxis(YGFlexDirectionRow, ownerWidth).unwrap();
-  const float marginAxisColumn =
-      node->getMarginForAxis(YGFlexDirectionColumn, ownerWidth).unwrap();
+  const float paddingAndBorderAxisRow = YGNodePaddingAndBorderForAxis(node, YGFlexDirectionRow, ownerWidth);
+  const float paddingAndBorderAxisColumn = YGNodePaddingAndBorderForAxis(node, YGFlexDirectionColumn, ownerWidth);
+  const float marginAxisRow = node->getMarginForAxis(YGFlexDirectionRow, ownerWidth).unwrap();
+  const float marginAxisColumn = node->getMarginForAxis(YGFlexDirectionColumn, ownerWidth).unwrap();
 
   node->setLayoutMeasuredDimension(
       YGNodeBoundAxis(
@@ -1739,8 +1738,8 @@ static bool YGNodeFixedSizeSetMeasuredDimensions(
 static void YGZeroOutLayoutRecursivly(
     const YGNodeRef node) {
   node->getLayout() = {};
-  node->setLayoutDimension(0, 0);
-  node->setLayoutDimension(0, 1);
+  node->setLayoutDimension(0, YGDimensionWidth);
+  node->setLayoutDimension(0, YGDimensionHeight);
   node->setHasNewLayout(true);
 
   node->iterChildrenAfterCloningIfNeeded(
@@ -2572,9 +2571,9 @@ static void YGJustifyMainAxis(
 //    content" because we don't support default minimum main sizes (see above
 //    for details). Each of our measure modes maps to a layout mode from the
 //    spec (https://www.w3.org/TR/CSS3-sizing/#terms):
-//      - YGMeasureModeUndefined: max content
-//      - YGMeasureModeExactly: fill available
-//      - YGMeasureModeAtMost: fit content
+//      - YGMeasureModeUndefined: max content   最大内容     对齐最大的子元素，如果超过父元素，父元素跟着变大
+//      - YGMeasureModeExactly: fill available  填充剩余空间  如果子元素小于父元素，将其拉伸
+//      - YGMeasureModeAtMost: fit content      适应内容     对齐最大的子元素，但不会超过父元素大小
 //
 //    When calling YGNodelayoutImpl and YGLayoutNodeInternal, if the caller
 //    passes an available size of undefined then it must also pass a measure
@@ -2597,17 +2596,17 @@ static void YGNodelayoutImpl(
       YGFloatIsUndefined(availableWidth)
           ? widthMeasureMode == YGMeasureModeUndefined
           : true,
-      "availableWidth is indefinite so widthMeasureMode must be "
-      "YGMeasureModeUndefined");
+      "availableWidth is indefinite so widthMeasureMode must be YGMeasureModeUndefined");
   YGAssertWithNode(
       node,
       YGFloatIsUndefined(availableHeight)
           ? heightMeasureMode == YGMeasureModeUndefined
           : true,
-      "availableHeight is indefinite so heightMeasureMode must be "
-      "YGMeasureModeUndefined");
+      "availableHeight is indefinite so heightMeasureMode must be YGMeasureModeUndefined");
 
   (performLayout ? layoutMarkerData.layouts : layoutMarkerData.measures) += 1;
+    
+    //YGStyle被当做一个readonly的对象了，布局时，将数据重新读到YGLayout中
 
   // Set the resolved resolution in the node's layout.
   const YGDirection direction = node->resolveDirection(ownerDirection);
@@ -2618,37 +2617,23 @@ static void YGNodelayoutImpl(
   const YGFlexDirection flexColumnDirection =
       YGResolveFlexDirection(YGFlexDirectionColumn, direction);
 
-  node->setLayoutMargin(
-      node->getLeadingMargin(flexRowDirection, ownerWidth).unwrap(),
-      YGEdgeStart);
-  node->setLayoutMargin(
-      node->getTrailingMargin(flexRowDirection, ownerWidth).unwrap(),
-      YGEdgeEnd);
-  node->setLayoutMargin(
-      node->getLeadingMargin(flexColumnDirection, ownerWidth).unwrap(),
-      YGEdgeTop);
-  node->setLayoutMargin(
-      node->getTrailingMargin(flexColumnDirection, ownerWidth).unwrap(),
-      YGEdgeBottom);
+    //设置margin
+    node->setLayoutMargin(node->getLeadingMargin(flexRowDirection, ownerWidth).unwrap(), YGEdgeStart);
+    node->setLayoutMargin(node->getTrailingMargin(flexRowDirection, ownerWidth).unwrap(), YGEdgeEnd);
+    node->setLayoutMargin(node->getLeadingMargin(flexColumnDirection, ownerWidth).unwrap(), YGEdgeTop);
+    node->setLayoutMargin(node->getTrailingMargin(flexColumnDirection, ownerWidth).unwrap(), YGEdgeBottom);
 
-  node->setLayoutBorder(node->getLeadingBorder(flexRowDirection), YGEdgeStart);
-  node->setLayoutBorder(node->getTrailingBorder(flexRowDirection), YGEdgeEnd);
-  node->setLayoutBorder(node->getLeadingBorder(flexColumnDirection), YGEdgeTop);
-  node->setLayoutBorder(
-      node->getTrailingBorder(flexColumnDirection), YGEdgeBottom);
+    //设置border
+    node->setLayoutBorder(node->getLeadingBorder(flexRowDirection), YGEdgeStart);
+    node->setLayoutBorder(node->getTrailingBorder(flexRowDirection), YGEdgeEnd);
+    node->setLayoutBorder(node->getLeadingBorder(flexColumnDirection), YGEdgeTop);
+    node->setLayoutBorder(node->getTrailingBorder(flexColumnDirection), YGEdgeBottom);
 
-  node->setLayoutPadding(
-      node->getLeadingPadding(flexRowDirection, ownerWidth).unwrap(),
-      YGEdgeStart);
-  node->setLayoutPadding(
-      node->getTrailingPadding(flexRowDirection, ownerWidth).unwrap(),
-      YGEdgeEnd);
-  node->setLayoutPadding(
-      node->getLeadingPadding(flexColumnDirection, ownerWidth).unwrap(),
-      YGEdgeTop);
-  node->setLayoutPadding(
-      node->getTrailingPadding(flexColumnDirection, ownerWidth).unwrap(),
-      YGEdgeBottom);
+    //设置padding
+    node->setLayoutPadding(node->getLeadingPadding(flexRowDirection, ownerWidth).unwrap(), YGEdgeStart);
+    node->setLayoutPadding(node->getTrailingPadding(flexRowDirection, ownerWidth).unwrap(), YGEdgeEnd);
+    node->setLayoutPadding(node->getLeadingPadding(flexColumnDirection, ownerWidth).unwrap(), YGEdgeTop);
+    node->setLayoutPadding(node->getTrailingPadding(flexColumnDirection, ownerWidth).unwrap(), YGEdgeBottom);
 
   if (node->hasMeasureFunc()) {
     YGNodeWithMeasureFuncSetMeasuredDimensions(
@@ -3859,6 +3844,11 @@ static void YGRoundToPixelGrid(
   }
 }
 
+/// 计算YGNode布局和大小
+/// @param node 关联的YGNode节点
+/// @param ownerWidth 盒子宽度
+/// @param ownerHeight 盒子高度
+/// @param ownerDirection 方向
 void YGNodeCalculateLayout(
     const YGNodeRef node,
     const float ownerWidth,
@@ -3870,33 +3860,32 @@ void YGNodeCalculateLayout(
   // visit all dirty nodes at least once. Subsequent visits will be skipped if
   // the input parameters don't change.
   gCurrentGenerationCount++;
-  node->resolveDimension();
-  
+    
+    
+    node->resolveDimension();
     /**
-     获取整个盒子的尺寸
+     获取整个盒子的尺寸，以及auto size模式
      */
     float width = YGUndefined;
-  YGMeasureMode widthMeasureMode = YGMeasureModeUndefined;
-  if (YGNodeIsStyleDimDefined(node, YGFlexDirectionRow, ownerWidth)) {
-    width =
-        (YGResolveValue(
-             node->getResolvedDimension(dim[YGFlexDirectionRow]), ownerWidth) +
-         node->getMarginForAxis(YGFlexDirectionRow, ownerWidth))
-            .unwrap();
-    widthMeasureMode = YGMeasureModeExactly;
-  } else if (!YGResolveValue(
-                  node->getStyle().maxDimensions[YGDimensionWidth], ownerWidth)
-                  .isUndefined()) {
-    width = YGResolveValue(
-                node->getStyle().maxDimensions[YGDimensionWidth], ownerWidth)
-                .unwrap();
-    widthMeasureMode = YGMeasureModeAtMost;
-  } else {
-    width = ownerWidth;
-    widthMeasureMode = YGFloatIsUndefined(width) ? YGMeasureModeUndefined
-                                                 : YGMeasureModeExactly;
-  }
+    YGMeasureMode widthMeasureMode = YGMeasureModeUndefined;
+    //定义了整体宽度
+    if (YGNodeIsStyleDimDefined(node, YGFlexDirectionRow, ownerWidth)) {
+        width = (YGResolveValue(node->getResolvedDimension(dim[YGFlexDirectionRow]), ownerWidth) +
+         node->getMarginForAxis(YGFlexDirectionRow, ownerWidth)).unwrap();
+        widthMeasureMode = YGMeasureModeExactly;
+    }
+    //没有定义宽度，但是定义了最大宽度，即盒子的最终宽度可伸缩，但不会超过最大宽度
+    else if (!YGResolveValue(node->getStyle().maxDimensions[YGDimensionWidth], ownerWidth).isUndefined()) {
+        width = YGResolveValue(node->getStyle().maxDimensions[YGDimensionWidth], ownerWidth).unwrap();
+        widthMeasureMode = YGMeasureModeAtMost;
+    }
+    //如果定义了ownerWidht，就还是固定宽度，否则宽度可自由伸缩
+    else {
+        width = ownerWidth;
+        widthMeasureMode = YGFloatIsUndefined(width) ? YGMeasureModeUndefined : YGMeasureModeExactly;
+    }
 
+    //同上
   float height = YGUndefined;
   YGMeasureMode heightMeasureMode = YGMeasureModeUndefined;
   if (YGNodeIsStyleDimDefined(node, YGFlexDirectionColumn, ownerHeight)) {

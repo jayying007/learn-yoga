@@ -113,6 +113,9 @@ YG_ENUM_SEQ_DECL(
     YGLogLevelVerbose,
     YGLogLevelFatal)
 
+///      - YGMeasureModeUndefined: max content   最大内容     对齐最大的子元素，如果超过父元素，父元素跟着变大
+///      - YGMeasureModeExactly: fill available  填充剩余空间  如果子元素小于父元素，将其拉伸
+///      - YGMeasureModeAtMost: fit content      适应内容     对齐最大的子元素，但不会超过父元素大小
 YG_ENUM_SEQ_DECL(
     YGMeasureMode,
     YGMeasureModeUndefined,

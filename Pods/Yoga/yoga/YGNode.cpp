@@ -354,16 +354,22 @@ YGValue YGNode::resolveFlexBasisPtr() const {
 /// 解析Dimension，如果定义maxDimensions == minDimensions，就更新，否则取默认
 /// 之前设置的minWidth、maxHeight、width这些就是存到了Dimensions数组里面
 void YGNode::resolveDimension() {
-  using namespace yoga;
-  for (int dim = YGDimensionWidth; dim < enums::count<YGDimension>(); dim++) {
-    if (!getStyle().maxDimensions[dim].isUndefined() &&
-        YGValueEqual(
-            getStyle().maxDimensions[dim], style_.minDimensions[dim])) {
-      resolvedDimensions_[dim] = style_.maxDimensions[dim];
+    using namespace yoga;
+    //width
+    if (!style_.maxDimensions[YGDimensionWidth].isUndefined()
+        && YGValueEqual(style_.maxDimensions[YGDimensionWidth], style_.minDimensions[YGDimensionWidth])) {
+        resolvedDimensions_[YGDimensionWidth] = style_.maxDimensions[YGDimensionWidth];
     } else {
-      resolvedDimensions_[dim] = style_.dimensions[dim];
+        resolvedDimensions_[YGDimensionWidth] = style_.dimensions[YGDimensionWidth];
     }
-  }
+    
+    //height
+    if (!style_.maxDimensions[YGDimensionHeight].isUndefined()
+        && YGValueEqual(style_.maxDimensions[YGDimensionHeight], style_.minDimensions[YGDimensionHeight])) {
+        resolvedDimensions_[YGDimensionHeight] = style_.maxDimensions[YGDimensionHeight];
+    } else {
+        resolvedDimensions_[YGDimensionHeight] = style_.dimensions[YGDimensionHeight];
+    }
 }
 
 YGDirection YGNode::resolveDirection(const YGDirection ownerDirection) {
@@ -383,7 +389,7 @@ void YGNode::clearChildren() {
 // Other Methods
 
 void YGNode::cloneChildrenIfNeeded() {
-  iterChildrenAfterCloningIfNeeded([](YGNodeRef) {});
+  iterChildrenAfterCloningIfNeeded([](YGNodeRef node) {});
 }
 
 void YGNode::markDirtyAndPropogate() {

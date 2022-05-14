@@ -22,7 +22,6 @@
     
     // Do any additional setup after loading the view.
     UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
-    NSLog(@"%.2f", [UIScreen mainScreen].scale);
     button.frame = CGRectMake(60, 300, 100, 50);
     [button setTitle:@"jump" forState:UIControlStateNormal];
     [button addTarget:self action:@selector(jump) forControlEvents:UIControlEventTouchUpInside];
@@ -66,8 +65,7 @@
     }];
     
     [view1.yoga applyLayout];
-    
-    NSLog(@"%lu", (unsigned long)view1.yoga.numberOfChildren);
+    NSLog(@"");
 }
 
 - (void)jump {
