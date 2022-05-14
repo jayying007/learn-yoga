@@ -1,0 +1,412 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3FABD69A2816E772002F7094 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FABD6992816E772002F7094 /* AppDelegate.m */; };
+		3FABD6A02816E772002F7094 /* ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3FABD69F2816E772002F7094 /* ViewController.mm */; };
+		3FABD6A52816E772002F7094 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3FABD6A42816E772002F7094 /* Assets.xcassets */; };
+		3FABD6A82816E772002F7094 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3FABD6A62816E772002F7094 /* LaunchScreen.storyboard */; };
+		3FABD6AB2816E772002F7094 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FABD6AA2816E772002F7094 /* main.m */; };
+		3FABD6B32816F38D002F7094 /* TextViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3FABD6B22816F38D002F7094 /* TextViewController.mm */; };
+		3FABD6B62816FA66002F7094 /* UIView+Frame.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FABD6B52816FA66002F7094 /* UIView+Frame.m */; };
+		D78A7BAC7F59A754B60AA9A9 /* libPods-learn-yoga.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7182C93E569167EF006DA941 /* libPods-learn-yoga.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1D1D87E225F06E7E583AC191 /* Pods-learn-yoga.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-learn-yoga.debug.xcconfig"; path = "Target Support Files/Pods-learn-yoga/Pods-learn-yoga.debug.xcconfig"; sourceTree = "<group>"; };
+		3FABD6952816E772002F7094 /* learn-yoga.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "learn-yoga.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3FABD6982816E772002F7094 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		3FABD6992816E772002F7094 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		3FABD69E2816E772002F7094 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		3FABD69F2816E772002F7094 /* ViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ViewController.mm; sourceTree = "<group>"; };
+		3FABD6A42816E772002F7094 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3FABD6A72816E772002F7094 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		3FABD6A92816E772002F7094 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3FABD6AA2816E772002F7094 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		3FABD6B12816F38D002F7094 /* TextViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextViewController.h; sourceTree = "<group>"; };
+		3FABD6B22816F38D002F7094 /* TextViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TextViewController.mm; sourceTree = "<group>"; };
+		3FABD6B42816FA66002F7094 /* UIView+Frame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+Frame.h"; sourceTree = "<group>"; };
+		3FABD6B52816FA66002F7094 /* UIView+Frame.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+Frame.m"; sourceTree = "<group>"; };
+		7182C93E569167EF006DA941 /* libPods-learn-yoga.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-learn-yoga.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8820560B719AD7B163D7BCDB /* Pods-learn-yoga.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-learn-yoga.release.xcconfig"; path = "Target Support Files/Pods-learn-yoga/Pods-learn-yoga.release.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3FABD6922816E772002F7094 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D78A7BAC7F59A754B60AA9A9 /* libPods-learn-yoga.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3FABD68C2816E772002F7094 = {
+			isa = PBXGroup;
+			children = (
+				3FABD6972816E772002F7094 /* learn-yoga */,
+				3FABD6962816E772002F7094 /* Products */,
+				DA99DEAF4904F28CFC25D244 /* Pods */,
+				51F1A556447B4CA9E93E7F33 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		3FABD6962816E772002F7094 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3FABD6952816E772002F7094 /* learn-yoga.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3FABD6972816E772002F7094 /* learn-yoga */ = {
+			isa = PBXGroup;
+			children = (
+				3FABD6982816E772002F7094 /* AppDelegate.h */,
+				3FABD6992816E772002F7094 /* AppDelegate.m */,
+				3FABD69E2816E772002F7094 /* ViewController.h */,
+				3FABD69F2816E772002F7094 /* ViewController.mm */,
+				3FABD6A42816E772002F7094 /* Assets.xcassets */,
+				3FABD6A62816E772002F7094 /* LaunchScreen.storyboard */,
+				3FABD6A92816E772002F7094 /* Info.plist */,
+				3FABD6AA2816E772002F7094 /* main.m */,
+				3FABD6B12816F38D002F7094 /* TextViewController.h */,
+				3FABD6B22816F38D002F7094 /* TextViewController.mm */,
+				3FABD6B42816FA66002F7094 /* UIView+Frame.h */,
+				3FABD6B52816FA66002F7094 /* UIView+Frame.m */,
+			);
+			path = "learn-yoga";
+			sourceTree = "<group>";
+		};
+		51F1A556447B4CA9E93E7F33 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7182C93E569167EF006DA941 /* libPods-learn-yoga.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DA99DEAF4904F28CFC25D244 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				1D1D87E225F06E7E583AC191 /* Pods-learn-yoga.debug.xcconfig */,
+				8820560B719AD7B163D7BCDB /* Pods-learn-yoga.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3FABD6942816E772002F7094 /* learn-yoga */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3FABD6AE2816E772002F7094 /* Build configuration list for PBXNativeTarget "learn-yoga" */;
+			buildPhases = (
+				DE0675C7C884060E0B3D9BC8 /* [CP] Check Pods Manifest.lock */,
+				3FABD6912816E772002F7094 /* Sources */,
+				3FABD6922816E772002F7094 /* Frameworks */,
+				3FABD6932816E772002F7094 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "learn-yoga";
+			productName = "learn-yoga";
+			productReference = 3FABD6952816E772002F7094 /* learn-yoga.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3FABD68D2816E772002F7094 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1330;
+				TargetAttributes = {
+					3FABD6942816E772002F7094 = {
+						CreatedOnToolsVersion = 13.3;
+					};
+				};
+			};
+			buildConfigurationList = 3FABD6902816E772002F7094 /* Build configuration list for PBXProject "learn-yoga" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 3FABD68C2816E772002F7094;
+			productRefGroup = 3FABD6962816E772002F7094 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3FABD6942816E772002F7094 /* learn-yoga */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3FABD6932816E772002F7094 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3FABD6A82816E772002F7094 /* LaunchScreen.storyboard in Resources */,
+				3FABD6A52816E772002F7094 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		DE0675C7C884060E0B3D9BC8 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-learn-yoga-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3FABD6912816E772002F7094 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3FABD6B32816F38D002F7094 /* TextViewController.mm in Sources */,
+				3FABD6A02816E772002F7094 /* ViewController.mm in Sources */,
+				3FABD69A2816E772002F7094 /* AppDelegate.m in Sources */,
+				3FABD6B62816FA66002F7094 /* UIView+Frame.m in Sources */,
+				3FABD6AB2816E772002F7094 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		3FABD6A62816E772002F7094 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3FABD6A72816E772002F7094 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		3FABD6AC2816E772002F7094 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		3FABD6AD2816E772002F7094 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		3FABD6AF2816E772002F7094 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1D1D87E225F06E7E583AC191 /* Pods-learn-yoga.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 86JSFRSCH9;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "learn-yoga/Info.plist";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jane.learn-yoga";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3FABD6B02816E772002F7094 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8820560B719AD7B163D7BCDB /* Pods-learn-yoga.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 86JSFRSCH9;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "learn-yoga/Info.plist";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jane.learn-yoga";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3FABD6902816E772002F7094 /* Build configuration list for PBXProject "learn-yoga" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3FABD6AC2816E772002F7094 /* Debug */,
+				3FABD6AD2816E772002F7094 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3FABD6AE2816E772002F7094 /* Build configuration list for PBXNativeTarget "learn-yoga" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3FABD6AF2816E772002F7094 /* Debug */,
+				3FABD6B02816E772002F7094 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3FABD68D2816E772002F7094 /* Project object */;
+}
