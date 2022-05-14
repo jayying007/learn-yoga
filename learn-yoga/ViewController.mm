@@ -38,6 +38,7 @@
         layout.width = YGPointValue(200);
         layout.height = YGPointValue(100);
         layout.marginTop = YGPointValue(50);
+        layout.paddingBottom = YGPointValue(50);
         layout.marginHorizontal = YGPointValue(100);
         layout.justifyContent = YGJustifyFlexEnd;
     }];
@@ -49,6 +50,7 @@
     [view2 configureLayoutWithBlock:^(YGLayout * _Nonnull layout) {
         layout.isEnabled = YES;
         layout.width = YGPointValue(20);
+        layout.paddingHorizontal = YGPointValue(10);
         layout.height = YGPointValue(20);
         layout.marginHorizontal = YGPointValue(10);
     }];

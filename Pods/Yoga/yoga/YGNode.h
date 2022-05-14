@@ -12,8 +12,6 @@
 #include "Yoga-internal.h"
 
 struct YGNode {
-  using MeasureWithContextFn =
-      YGSize (*)(YGNode*, float, YGMeasureMode, float, YGMeasureMode, void*);
   using BaselineWithContextFn = float (*)(YGNode*, float, float, void*);
   using PrintWithContextFn = void (*)(YGNode*, void*);
 
@@ -23,12 +21,10 @@ private:
   bool isReferenceBaseline_ : 1;
   bool isDirty_ : 1;
   YGNodeType nodeType_ : 1;
-  bool measureUsesContext_ : 1;
   bool baselineUsesContext_ : 1;
   bool printUsesContext_ : 1;
   union {
     YGMeasureFunc noContext;
-    MeasureWithContextFn withContext;
   } measure_ = {nullptr};
   union {
     YGBaselineFunc noContext;
@@ -68,7 +64,6 @@ public:
         isReferenceBaseline_{false},
         isDirty_{false},
         nodeType_{YGNodeTypeDefault},
-        measureUsesContext_{false},
         baselineUsesContext_{false},
         printUsesContext_{false} {}
   ~YGNode() = default; // cleanup of owner/children relationships in YGNodeFree
@@ -103,7 +98,7 @@ public:
     return measure_.noContext != nullptr;
   }
 
-  YGSize measure(float, YGMeasureMode, float, YGMeasureMode, void*);
+  YGSize measure(float, YGMeasureMode, float, YGMeasureMode);
 
   bool hasBaselineFunc() const noexcept {
     return baseline_.noContext != nullptr;
@@ -261,7 +256,6 @@ public:
   }
 
   void setMeasureFunc(YGMeasureFunc measureFunc);
-  void setMeasureFunc(MeasureWithContextFn);
   void setMeasureFunc(std::nullptr_t) {
     return setMeasureFunc(YGMeasureFunc{nullptr});
   }

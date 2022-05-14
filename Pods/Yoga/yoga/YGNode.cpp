@@ -19,7 +19,6 @@ YGNode::YGNode(YGNode&& node) {
   isReferenceBaseline_ = node.isReferenceBaseline_;
   isDirty_ = node.isDirty_;
   nodeType_ = node.nodeType_;
-  measureUsesContext_ = node.measureUsesContext_;
   baselineUsesContext_ = node.baselineUsesContext_;
   printUsesContext_ = node.printUsesContext_;
   measure_ = node.measure_;
@@ -141,13 +140,9 @@ YGSize YGNode::measure(
     float width,
     YGMeasureMode widthMode,
     float height,
-    YGMeasureMode heightMode,
-    void* layoutContext) {
+    YGMeasureMode heightMode) {
 
-  return measureUsesContext_
-      ? measure_.withContext(
-            this, width, widthMode, height, heightMode, layoutContext)
-      : measure_.noContext(this, width, widthMode, height, heightMode);
+  return measure_.noContext(this, width, widthMode, height, heightMode);
 }
 
 float YGNode::baseline(float width, float height, void* layoutContext) {
@@ -178,16 +173,8 @@ void YGNode::setMeasureFunc(decltype(YGNode::measure_) measureFunc) {
 }
 
 void YGNode::setMeasureFunc(YGMeasureFunc measureFunc) {
-  measureUsesContext_ = false;
   decltype(YGNode::measure_) m;
   m.noContext = measureFunc;
-  setMeasureFunc(m);
-}
-
-void YGNode::setMeasureFunc(MeasureWithContextFn measureFunc) {
-  measureUsesContext_ = true;
-  decltype(YGNode::measure_) m;
-  m.withContext = measureFunc;
   setMeasureFunc(m);
 }
 
@@ -260,7 +247,7 @@ void YGNode::setLayoutComputedFlexBasisGeneration(
     uint32_t computedFlexBasisGeneration) {
   layout_.computedFlexBasisGeneration = computedFlexBasisGeneration;
 }
-
+//measuredDimension包含了padding+border
 void YGNode::setLayoutMeasuredDimension(float measuredDimension, int index) {
   layout_.measuredDimensions[index] = measuredDimension;
 }
