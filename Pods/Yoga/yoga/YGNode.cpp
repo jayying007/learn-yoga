@@ -382,8 +382,8 @@ void YGNode::clearChildren() {
 
 // Other Methods
 
-void YGNode::cloneChildrenIfNeeded(void* cloneContext) {
-  iterChildrenAfterCloningIfNeeded([](YGNodeRef, void*) {}, cloneContext);
+void YGNode::cloneChildrenIfNeeded() {
+  iterChildrenAfterCloningIfNeeded([](YGNodeRef) {});
 }
 
 void YGNode::markDirtyAndPropogate() {

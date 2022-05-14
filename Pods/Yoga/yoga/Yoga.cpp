@@ -932,8 +932,7 @@ bool YGLayoutNodeInternal(
     const bool performLayout,
     const char* reason,
     const YGConfigRef config,
-    YGMarkerLayoutData& layoutMarkerData,
-    void* const layoutContext);
+    YGMarkerLayoutData& layoutMarkerData);
 
 #ifdef DEBUG
 static void YGNodePrintInternal(
@@ -986,14 +985,14 @@ static inline YGAlign YGNodeAlignItem(
   return align;
 }
 
-static float YGBaseline(const YGNodeRef node, void* layoutContext) {
+static float YGBaseline(const YGNodeRef node) {
   if (node->hasBaselineFunc()) {
+      void *context = nullptr;
     const float baseline = marker::MarkerSection<YGMarkerBaselineFn>::wrap(
         node,
         &YGNode::baseline,
         node->getLayout().measuredDimensions[YGDimensionWidth],
-        node->getLayout().measuredDimensions[YGDimensionHeight],
-        layoutContext);
+        node->getLayout().measuredDimensions[YGDimensionHeight], context);
     YGAssertWithNode(
         node,
         !YGFloatIsUndefined(baseline),
@@ -1026,7 +1025,7 @@ static float YGBaseline(const YGNodeRef node, void* layoutContext) {
     return node->getLayout().measuredDimensions[YGDimensionHeight];
   }
 
-  const float baseline = YGBaseline(baselineChild, layoutContext);
+  const float baseline = YGBaseline(baselineChild);
   return baseline + baselineChild->getLayout().position[YGEdgeTop];
 }
 
@@ -1181,8 +1180,7 @@ static void YGNodeComputeFlexBasisForChild(
     const YGMeasureMode heightMode,
     const YGDirection direction,
     const YGConfigRef config,
-    YGMarkerLayoutData& layoutMarkerData,
-    void* const layoutContext) {
+    YGMarkerLayoutData& layoutMarkerData) {
   const YGFlexDirection mainAxis =
       YGResolveFlexDirection(node->getStyle().flexDirection, direction);
   const bool isMainAxisRow = YGFlexDirectionIsRow(mainAxis);
@@ -1356,8 +1354,7 @@ static void YGNodeComputeFlexBasisForChild(
         false,
         "measure",
         config,
-        layoutMarkerData,
-        layoutContext);
+        layoutMarkerData);
 
     child->setLayoutComputedFlexBasis(YGFloatOptional(YGFloatMax(
         child->getLayout().measuredDimensions[dim[mainAxis]],
@@ -1374,8 +1371,7 @@ static void YGNodeAbsoluteLayoutChild(
     const float height,
     const YGDirection direction,
     const YGConfigRef config,
-    YGMarkerLayoutData& layoutMarkerData,
-    void* const layoutContext) {
+    YGMarkerLayoutData& layoutMarkerData) {
   const YGFlexDirection mainAxis =
       YGResolveFlexDirection(node->getStyle().flexDirection, direction);
   const YGFlexDirection crossAxis = YGFlexDirectionCross(mainAxis, direction);
@@ -1480,8 +1476,7 @@ static void YGNodeAbsoluteLayoutChild(
         false,
         "abs-measure",
         config,
-        layoutMarkerData,
-        layoutContext);
+        layoutMarkerData);
     childWidth = child->getLayout().measuredDimensions[YGDimensionWidth] +
         child->getMarginForAxis(YGFlexDirectionRow, width).unwrap();
     childHeight = child->getLayout().measuredDimensions[YGDimensionHeight] +
@@ -1500,8 +1495,7 @@ static void YGNodeAbsoluteLayoutChild(
       true,
       "abs-layout",
       config,
-      layoutMarkerData,
-      layoutContext);
+      layoutMarkerData);
 
   if (child->isTrailingPosDefined(mainAxis) &&
       !child->isLeadingPositionDefined(mainAxis)) {
@@ -1568,8 +1562,7 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
     const YGMeasureMode widthMeasureMode,
     const YGMeasureMode heightMeasureMode,
     const float ownerWidth,
-    const float ownerHeight,
-    void* const layoutContext) {
+    const float ownerHeight) {
   YGAssertWithNode(
       node,
       node->hasMeasureFunc(),
@@ -1614,14 +1607,14 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
         YGDimensionHeight);
   } else {
     // Measure the text under the current constraints.
+      void *context = nullptr;
     const YGSize measuredSize = marker::MarkerSection<YGMarkerMeasure>::wrap(
         node,
         &YGNode::measure,
         innerWidth,
         widthMeasureMode,
         innerHeight,
-        heightMeasureMode,
-        layoutContext);
+        heightMeasureMode, context);
 
     node->setLayoutMeasuredDimension(
         YGNodeBoundAxis(
@@ -1744,15 +1737,14 @@ static bool YGNodeFixedSizeSetMeasuredDimensions(
 }
 
 static void YGZeroOutLayoutRecursivly(
-    const YGNodeRef node,
-    void* layoutContext) {
+    const YGNodeRef node) {
   node->getLayout() = {};
   node->setLayoutDimension(0, 0);
   node->setLayoutDimension(0, 1);
   node->setHasNewLayout(true);
 
   node->iterChildrenAfterCloningIfNeeded(
-      YGZeroOutLayoutRecursivly, layoutContext);
+      YGZeroOutLayoutRecursivly);
 }
 
 static float YGNodeCalculateAvailableInnerDim(
@@ -1804,8 +1796,7 @@ static float YGNodeComputeFlexBasisForChildren(
     YGFlexDirection mainAxis,
     const YGConfigRef config,
     bool performLayout,
-    YGMarkerLayoutData& layoutMarkerData,
-    void* const layoutContext) {
+    YGMarkerLayoutData& layoutMarkerData) {
   float totalOuterFlexBasis = 0.0f;
   YGNodeRef singleFlexChild = nullptr;
   YGVector children = node->getChildren();
@@ -1834,7 +1825,7 @@ static float YGNodeComputeFlexBasisForChildren(
   for (auto child : children) {
     child->resolveDimension();
     if (child->getStyle().display == YGDisplayNone) {
-      YGZeroOutLayoutRecursivly(child, layoutContext);
+      YGZeroOutLayoutRecursivly(child);
       child->setHasNewLayout(true);
       child->setDirty(false);
       continue;
@@ -1870,8 +1861,7 @@ static float YGNodeComputeFlexBasisForChildren(
           heightMeasureMode,
           direction,
           config,
-          layoutMarkerData,
-          layoutContext);
+          layoutMarkerData);
     }
 
     totalOuterFlexBasis +=
@@ -1984,8 +1974,7 @@ static float YGDistributeFreeSpaceSecondPass(
     const YGMeasureMode measureModeCrossDim,
     const bool performLayout,
     const YGConfigRef config,
-    YGMarkerLayoutData& layoutMarkerData,
-    void* const layoutContext) {
+    YGMarkerLayoutData& layoutMarkerData) {
   float childFlexBasis = 0;
   float flexShrinkScaledFactor = 0;
   float flexGrowFactor = 0;
@@ -2150,8 +2139,7 @@ static float YGDistributeFreeSpaceSecondPass(
         performLayout && !requiresStretchLayout,
         "flex",
         config,
-        layoutMarkerData,
-        layoutContext);
+        layoutMarkerData);
     node->setLayoutHadOverflow(
         node->getLayout().hadOverflow |
         currentRelativeChild->getLayout().hadOverflow);
@@ -2281,8 +2269,7 @@ static void YGResolveFlexibleLength(
     const YGMeasureMode measureModeCrossDim,
     const bool performLayout,
     const YGConfigRef config,
-    YGMarkerLayoutData& layoutMarkerData,
-    void* const layoutContext) {
+    YGMarkerLayoutData& layoutMarkerData) {
   const float originalFreeSpace = collectedFlexItemsValues.remainingFreeSpace;
   // First pass: detect the flex items whose min/max constraints trigger
   YGDistributeFreeSpaceFirstPass(
@@ -2307,8 +2294,7 @@ static void YGResolveFlexibleLength(
       measureModeCrossDim,
       performLayout,
       config,
-      layoutMarkerData,
-      layoutContext);
+      layoutMarkerData);
 
   collectedFlexItemsValues.remainingFreeSpace =
       originalFreeSpace - distributedFreeSpace;
@@ -2327,8 +2313,7 @@ static void YGJustifyMainAxis(
     const float availableInnerMainDim,
     const float availableInnerCrossDim,
     const float availableInnerWidth,
-    const bool performLayout,
-    void* const layoutContext) {
+    const bool performLayout) {
   const YGStyle& style = node->getStyle();
   const float leadingPaddingAndBorderMain =
       node->getLeadingPaddingAndBorder(mainAxis, ownerWidth).unwrap();
@@ -2488,7 +2473,7 @@ static void YGJustifyMainAxis(
           if (isNodeBaselineLayout) {
             // If the child is baseline aligned then the cross dimension is
             // calculated by adding maxAscent and maxDescent from the baseline.
-            const float ascent = YGBaseline(child, layoutContext) +
+            const float ascent = YGBaseline(child) +
                 child
                     ->getLeadingMargin(
                         YGFlexDirectionColumn, availableInnerWidth)
@@ -2606,8 +2591,7 @@ static void YGNodelayoutImpl(
     const float ownerHeight,
     const bool performLayout,
     const YGConfigRef config,
-    YGMarkerLayoutData& layoutMarkerData,
-    void* const layoutContext) {
+    YGMarkerLayoutData& layoutMarkerData) {
   YGAssertWithNode(
       node,
       YGFloatIsUndefined(availableWidth)
@@ -2674,8 +2658,7 @@ static void YGNodelayoutImpl(
         widthMeasureMode,
         heightMeasureMode,
         ownerWidth,
-        ownerHeight,
-        layoutContext);
+        ownerHeight);
     return;
   }
 
@@ -2708,7 +2691,7 @@ static void YGNodelayoutImpl(
 
   // At this point we know we're going to perform work. Ensure that each child
   // has a mutable copy.
-  node->cloneChildrenIfNeeded(layoutContext);
+  node->cloneChildrenIfNeeded();
   // Reset layout flags, as they could have changed.
   node->setLayoutHadOverflow(false);
 
@@ -2792,8 +2775,7 @@ static void YGNodelayoutImpl(
       mainAxis,
       config,
       performLayout,
-      layoutMarkerData,
-      layoutContext);
+      layoutMarkerData);
 
   const bool flexBasisOverflows = measureModeMainDim == YGMeasureModeUndefined
       ? false
@@ -2896,8 +2878,7 @@ static void YGNodelayoutImpl(
           measureModeCrossDim,
           performLayout,
           config,
-          layoutMarkerData,
-          layoutContext);
+          layoutMarkerData);
     }
 
     node->setLayoutHadOverflow(
@@ -2924,8 +2905,7 @@ static void YGNodelayoutImpl(
         availableInnerMainDim,
         availableInnerCrossDim,
         availableInnerWidth,
-        performLayout,
-        layoutContext);
+        performLayout);
 
     float containerCrossAxis = availableInnerCrossDim;
     if (measureModeCrossDim == YGMeasureModeUndefined ||
@@ -3071,8 +3051,7 @@ static void YGNodelayoutImpl(
                   true,
                   "stretch",
                   config,
-                  layoutMarkerData,
-                  layoutContext);
+                  layoutMarkerData);
             }
           } else {
             const float remainingCrossDim = containerCrossAxis -
@@ -3176,7 +3155,7 @@ static void YGNodelayoutImpl(
                         .unwrap());
           }
           if (YGNodeAlignItem(node, child) == YGAlignBaseline) {
-            const float ascent = YGBaseline(child, layoutContext) +
+            const float ascent = YGBaseline(child) +
                 child
                     ->getLeadingMargin(
                         YGFlexDirectionColumn, availableInnerWidth)
@@ -3279,8 +3258,7 @@ static void YGNodelayoutImpl(
                         true,
                         "multiline-stretch",
                         config,
-                        layoutMarkerData,
-                        layoutContext);
+                        layoutMarkerData);
                   }
                 }
                 break;
@@ -3288,7 +3266,7 @@ static void YGNodelayoutImpl(
               case YGAlignBaseline: {
                 child->setLayoutPosition(
                     currentLead + maxAscentForCurrentLine -
-                        YGBaseline(child, layoutContext) +
+                        YGBaseline(child) +
                         child
                             ->getLeadingPosition(
                                 YGFlexDirectionColumn, availableInnerCrossDim)
@@ -3419,8 +3397,7 @@ static void YGNodelayoutImpl(
           availableInnerHeight,
           direction,
           config,
-          layoutMarkerData,
-          layoutContext);
+          layoutMarkerData);
     }
 
     // STEP 11: SETTING TRAILING POSITIONS FOR CHILDREN
@@ -3624,8 +3601,7 @@ bool YGLayoutNodeInternal(
     const bool performLayout,
     const char* reason,
     const YGConfigRef config,
-    YGMarkerLayoutData& layoutMarkerData,
-    void* const layoutContext) {
+    YGMarkerLayoutData& layoutMarkerData) {
   YGLayout* layout = &node->getLayout();
 
   gDepth++;
@@ -3740,8 +3716,7 @@ bool YGLayoutNodeInternal(
         ownerHeight,
         performLayout,
         config,
-        layoutMarkerData,
-        layoutContext);
+        layoutMarkerData);
 
     layout->lastOwnerDirection = ownerDirection;
 
@@ -3884,12 +3859,11 @@ static void YGRoundToPixelGrid(
   }
 }
 
-void YGNodeCalculateLayoutWithContext(
+void YGNodeCalculateLayout(
     const YGNodeRef node,
     const float ownerWidth,
     const float ownerHeight,
-    const YGDirection ownerDirection,
-    void* layoutContext) {
+    const YGDirection ownerDirection) {
   marker::MarkerSection<YGMarkerLayout> marker{node};
 
   // Increment the generation count. This will force the recursive routine to
@@ -3959,8 +3933,7 @@ void YGNodeCalculateLayoutWithContext(
           true,
           "initial",
           node->getConfig(),
-          marker.data,
-          layoutContext)) {
+          marker.data)) {
     node->setPosition(
         node->getLayout().direction, ownerWidth, ownerHeight, ownerWidth);
     YGRoundToPixelGrid(node, node->getConfig()->pointScaleFactor, 0.0f, 0.0f);
@@ -3975,15 +3948,6 @@ void YGNodeCalculateLayoutWithContext(
     }
 #endif
   }
-}
-
-void YGNodeCalculateLayout(
-    const YGNodeRef node,
-    const float ownerWidth,
-    const float ownerHeight,
-    const YGDirection ownerDirection) {
-  YGNodeCalculateLayoutWithContext(
-      node, ownerWidth, ownerHeight, ownerDirection, nullptr);
 }
 
 void YGConfigSetLogger(const YGConfigRef config, YGLogger logger) {
