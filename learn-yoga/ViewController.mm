@@ -8,6 +8,7 @@
 #import "ViewController.h"
 #import "TextViewController.h"
 #import <YogaKit/UIView+Yoga.h>
+#import "UIView+Frame.h"
 
 @interface ViewController ()
 
@@ -64,7 +65,7 @@
         layout.marginHorizontal = YGPointValue(10);
     }];
     
-    [view1.yoga applyLayoutPreservingOrigin:YES];
+    [view1.yoga applyLayout];
     
     NSLog(@"%lu", (unsigned long)view1.yoga.numberOfChildren);
 }

@@ -118,26 +118,9 @@ typedef NS_OPTIONS(NSInteger, YGDimensionFlexibility) {
  */
 @property (nonatomic, readonly, assign) YGDirection resolvedDirection;
 
-/**
- Perform a layout calculation and update the frames of the views in the hierarchy with the results.
- If the origin is not preserved, the root view's layout results will applied from {0,0}.
- */
-- (void)applyLayoutPreservingOrigin:(BOOL)preserveOrigin
-    NS_SWIFT_NAME(applyLayout(preservingOrigin:));
+- (void)applyLayout;
 
-/**
- Perform a layout calculation and update the frames of the views in the hierarchy with the results.
- If the origin is not preserved, the root view's layout results will applied from {0,0}.
- */
-- (void)applyLayoutPreservingOrigin:(BOOL)preserveOrigin
-               dimensionFlexibility:(YGDimensionFlexibility)dimensionFlexibility
-    NS_SWIFT_NAME(applyLayout(preservingOrigin:dimensionFlexibility:));
-
-/**
- Returns the size of the view if no constraints were given. This could equivalent to calling [self
- sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
- */
-@property (nonatomic, readonly, assign) CGSize intrinsicSize;
+- (void)applyLayoutDimensionFlexibility:(YGDimensionFlexibility)dimensionFlexibility;
 
 /**
   Returns the size of the view based on provided constraints. Pass NaN for an unconstrained dimension.

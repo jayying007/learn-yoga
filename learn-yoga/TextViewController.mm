@@ -88,7 +88,7 @@
         layout.minHeight = YGPointValue(40 + [self.view safeAreaInsets].bottom);
     }];
     
-    [self.view.yoga applyLayoutPreservingOrigin:YES];
+    [self.view.yoga applyLayout];
     scrollView.contentSize = CGSizeMake(scrollView.contentSize.width, textLabel1.height + textLabel2.height);
 }
 
