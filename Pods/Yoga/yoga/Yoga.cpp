@@ -1696,10 +1696,10 @@ static bool YGNodeFixedSizeSetMeasuredDimensions(
     const float ownerWidth,
     const float ownerHeight) {
     
-    bool childWidthNoEffectParent = (!YGFloatIsUndefined(availableWidth) &&
-                               widthMeasureMode == YGMeasureModeAtMost && availableWidth <= 0.0f);
-    bool childHeightNoEffectParent = (!YGFloatIsUndefined(availableHeight) &&
-                                heightMeasureMode == YGMeasureModeAtMost && availableHeight <= 0.0f);
+    bool childWidthNoEffectParent = (widthMeasureMode == YGMeasureModeAtMost && !YGFloatIsUndefined(availableWidth)
+                                    && availableWidth <= 0.0f);
+    bool childHeightNoEffectParent = (heightMeasureMode == YGMeasureModeAtMost && !YGFloatIsUndefined(availableHeight)
+                                    && availableHeight <= 0.0f);
     bool hasExactlyWidthAndHeight = (widthMeasureMode == YGMeasureModeExactly &&
                                      heightMeasureMode == YGMeasureModeExactly);
     //1. 父结点width<=0，且sizing模式为fit content，则子结点的width也<=0
@@ -1709,6 +1709,7 @@ static bool YGNodeFixedSizeSetMeasuredDimensions(
         const float  marginAxisColumn = node->getMarginForAxis(YGFlexDirectionColumn, ownerWidth).unwrap();
         const float  marginAxisRow = node->getMarginForAxis(YGFlexDirectionRow, ownerWidth).unwrap();
 
+        //这里为什么用0，而不是padding❓
         node->setLayoutMeasuredDimension(
             YGNodeBoundAxis(
             node,
@@ -2615,13 +2616,11 @@ static void YGNodelayoutImpl(
     //YGStyle被当做一个readonly的对象了，布局时，将属性重新写到YGLayout中
 
   // Set the resolved resolution in the node's layout.
-  const YGDirection direction = node->resolveDirection(ownerDirection);
-  node->setLayoutDirection(direction);
+    const YGDirection direction = node->resolveDirection(ownerDirection);
+    node->setLayoutDirection(direction);
 
-  const YGFlexDirection flexRowDirection =
-      YGResolveFlexDirection(YGFlexDirectionRow, direction);
-  const YGFlexDirection flexColumnDirection =
-      YGResolveFlexDirection(YGFlexDirectionColumn, direction);
+    const YGFlexDirection flexRowDirection = YGResolveFlexDirection(YGFlexDirectionRow, direction);
+    const YGFlexDirection flexColumnDirection = YGResolveFlexDirection(YGFlexDirectionColumn, direction);
 
     //设置margin
     node->setLayoutMargin(node->getLeadingMargin(flexRowDirection, ownerWidth).unwrap(), YGEdgeStart);
@@ -2641,7 +2640,8 @@ static void YGNodelayoutImpl(
     node->setLayoutPadding(node->getLeadingPadding(flexColumnDirection, ownerWidth).unwrap(), YGEdgeTop);
     node->setLayoutPadding(node->getTrailingPadding(flexColumnDirection, ownerWidth).unwrap(), YGEdgeBottom);
 
-    //有测量方法的都是叶子结点，不用继续往下计算
+    //默认情况下，有测量方法的都是叶子结点，不用继续往下计算
+    //如果是自己设置的测量方法，后面所有子结点的排版都归自己处理
     if (node->hasMeasureFunc()) {
         YGNodeWithMeasureFuncSetMeasuredDimensions(
         node,
@@ -3899,24 +3899,15 @@ void YGNodeCalculateLayout(
     float height = YGUndefined;
     YGMeasureMode heightMeasureMode = YGMeasureModeUndefined;
     if (YGNodeIsStyleDimDefined(node, YGFlexDirectionColumn, ownerHeight)) {
-        height = (YGResolveValue(
-                  node->getResolvedDimension(dim[YGFlexDirectionColumn]),
-                  ownerHeight) +
-              node->getMarginForAxis(YGFlexDirectionColumn, ownerWidth))
-                 .unwrap();
+        height = (YGResolveValue(node->getResolvedDimension(dim[YGFlexDirectionColumn]), ownerHeight) +
+              node->getMarginForAxis(YGFlexDirectionColumn, ownerWidth)).unwrap();
         heightMeasureMode = YGMeasureModeExactly;
-    } else if (!YGResolveValue(
-                  node->getStyle().maxDimensions[YGDimensionHeight],
-                  ownerHeight)
-                  .isUndefined()) {
-        height = YGResolveValue(
-                 node->getStyle().maxDimensions[YGDimensionHeight], ownerHeight)
-                 .unwrap();
+    } else if (!YGResolveValue(node->getStyle().maxDimensions[YGDimensionHeight], ownerHeight).isUndefined()) {
+        height = YGResolveValue(node->getStyle().maxDimensions[YGDimensionHeight], ownerHeight).unwrap();
         heightMeasureMode = YGMeasureModeAtMost;
     } else {
         height = ownerHeight;
-        heightMeasureMode = YGFloatIsUndefined(height) ? YGMeasureModeUndefined
-                                                   : YGMeasureModeExactly;
+        heightMeasureMode = YGFloatIsUndefined(height) ? YGMeasureModeUndefined : YGMeasureModeExactly;
     }
     
     
