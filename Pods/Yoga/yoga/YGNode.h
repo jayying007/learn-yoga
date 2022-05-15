@@ -221,6 +221,7 @@ public:
   YGFloatOptional getMarginForAxis(
       const YGFlexDirection axis,
       const float widthSize) const;
+    YGFloatOptional getPaddingAndBorderForAxis(const YGFlexDirection axis, const float widthSize) const;
   // Setters
 
   void setContext(void* context) {

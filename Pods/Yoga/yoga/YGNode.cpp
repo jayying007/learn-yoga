@@ -105,16 +105,12 @@ bool YGNode::isTrailingPosDefined(const YGFlexDirection axis) const {
            .isUndefined();
 }
 
-YGFloatOptional YGNode::getLeadingMargin(
-    const YGFlexDirection axis,
-    const float widthSize) const {
-  if (YGFlexDirectionIsRow(axis) && !style_.margin[YGEdgeStart].isUndefined()) {
-    return YGResolveValueMargin(style_.margin[YGEdgeStart], widthSize);
-  }
+YGFloatOptional YGNode::getLeadingMargin(const YGFlexDirection axis, const float widthSize) const {
+    if (YGFlexDirectionIsRow(axis) && !style_.margin[YGEdgeStart].isUndefined()) {
+        return YGResolveValueMargin(style_.margin[YGEdgeStart], widthSize);
+    }
 
-  return YGResolveValueMargin(
-      YGComputedEdgeValue(style_.margin, leading[axis], CompactValue::ofZero()),
-      widthSize);
+    return YGResolveValueMargin(YGComputedEdgeValue(style_.margin, leading[axis], CompactValue::ofZero()), widthSize);
 }
 
 YGFloatOptional YGNode::getTrailingMargin(
@@ -130,10 +126,12 @@ YGFloatOptional YGNode::getTrailingMargin(
       widthSize);
 }
 
-YGFloatOptional YGNode::getMarginForAxis(
-    const YGFlexDirection axis,
-    const float widthSize) const {
-  return getLeadingMargin(axis, widthSize) + getTrailingMargin(axis, widthSize);
+YGFloatOptional YGNode::getMarginForAxis(const YGFlexDirection axis, const float widthSize) const {
+    return getLeadingMargin(axis, widthSize) + getTrailingMargin(axis, widthSize);
+}
+
+YGFloatOptional YGNode::getPaddingAndBorderForAxis(const YGFlexDirection axis, const float widthSize) const {
+    return getLeadingPaddingAndBorder(axis, widthSize) + getTrailingPaddingAndBorder(axis, widthSize);
 }
 
 YGSize YGNode::measure(
@@ -281,34 +279,20 @@ void YGNode::setPosition(
     const float mainSize,
     const float crossSize,
     const float ownerWidth) {
-  /* Root nodes should be always layouted as LTR, so we don't return negative
-   * values. */
-  const YGDirection directionRespectingRoot =
-      owner_ != nullptr ? direction : YGDirectionLTR;
-  const YGFlexDirection mainAxis =
-      YGResolveFlexDirection(style_.flexDirection, directionRespectingRoot);
-  const YGFlexDirection crossAxis =
-      YGFlexDirectionCross(mainAxis, directionRespectingRoot);
+    /* Root nodes should be always layouted as LTR, so we don't return negative
+     * values. */
+    //如果是根结点，强制为LTR
+    const YGDirection directionRespectingRoot = owner_ != nullptr ? direction : YGDirectionLTR;
+    const YGFlexDirection mainAxis = YGResolveFlexDirection(style_.flexDirection, directionRespectingRoot);
+    const YGFlexDirection crossAxis = YGFlexDirectionCross(mainAxis, directionRespectingRoot);
 
-  const YGFloatOptional relativePositionMain =
-      relativePosition(mainAxis, mainSize);
-  const YGFloatOptional relativePositionCross =
-      relativePosition(crossAxis, crossSize);
+    const YGFloatOptional relativePositionMain = relativePosition(mainAxis, mainSize);
+    const YGFloatOptional relativePositionCross = relativePosition(crossAxis, crossSize);
 
-  setLayoutPosition(
-      (getLeadingMargin(mainAxis, ownerWidth) + relativePositionMain).unwrap(),
-      leading[mainAxis]);
-  setLayoutPosition(
-      (getTrailingMargin(mainAxis, ownerWidth) + relativePositionMain).unwrap(),
-      trailing[mainAxis]);
-  setLayoutPosition(
-      (getLeadingMargin(crossAxis, ownerWidth) + relativePositionCross)
-          .unwrap(),
-      leading[crossAxis]);
-  setLayoutPosition(
-      (getTrailingMargin(crossAxis, ownerWidth) + relativePositionCross)
-          .unwrap(),
-      trailing[crossAxis]);
+    setLayoutPosition((getLeadingMargin(mainAxis, ownerWidth) + relativePositionMain).unwrap(), leading[mainAxis]);
+    setLayoutPosition((getTrailingMargin(mainAxis, ownerWidth) + relativePositionMain).unwrap(), trailing[mainAxis]);
+    setLayoutPosition((getLeadingMargin(crossAxis, ownerWidth) + relativePositionCross).unwrap(), leading[crossAxis]);
+    setLayoutPosition((getTrailingMargin(crossAxis, ownerWidth) + relativePositionCross).unwrap(), trailing[crossAxis]);
 }
 
 YGValue YGNode::marginLeadingValue(const YGFlexDirection axis) const {

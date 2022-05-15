@@ -963,15 +963,6 @@ static const std::array<YGEdge, 4> pos = {{
 static const std::array<YGDimension, 4> dim = {
     {YGDimensionHeight, YGDimensionHeight, YGDimensionWidth, YGDimensionWidth}};
 
-static inline float YGNodePaddingAndBorderForAxis(
-    const YGNodeRef node,
-    const YGFlexDirection axis,
-    const float widthSize) {
-  return (node->getLeadingPaddingAndBorder(axis, widthSize) +
-          node->getTrailingPaddingAndBorder(axis, widthSize))
-      .unwrap();
-}
-
 static inline YGAlign YGNodeAlignItem(
     const YGNodeRef node,
     const YGNodeRef child) {
@@ -1141,7 +1132,7 @@ static inline float YGNodeBoundAxis(
     const float axisSize,
     const float widthSize) {
     return YGFloatMax(YGNodeBoundAxisWithinMinAndMax(node, axis, YGFloatOptional{value}, axisSize).unwrap(),
-                      YGNodePaddingAndBorderForAxis(node, axis, widthSize));
+                      node->getPaddingAndBorderForAxis(axis, widthSize).unwrap());
 }
 
 static void YGNodeSetChildTrailingPosition(
@@ -1193,23 +1184,15 @@ static void YGNodeComputeFlexBasisForChild(
     const YGDirection direction,
     const YGConfigRef config,
     YGMarkerLayoutData& layoutMarkerData) {
-  const YGFlexDirection mainAxis =
-      YGResolveFlexDirection(node->getStyle().flexDirection, direction);
-  const bool isMainAxisRow = YGFlexDirectionIsRow(mainAxis);
-  const float mainAxisSize = isMainAxisRow ? width : height;
-  const float mainAxisownerSize = isMainAxisRow ? ownerWidth : ownerHeight;
+    
+    const YGFlexDirection mainAxis = YGResolveFlexDirection(node->getStyle().flexDirection, direction);
+    const bool isMainAxisRow = YGFlexDirectionIsRow(mainAxis);
+    const float mainAxisSize = isMainAxisRow ? width : height;
+    const float mainAxisownerSize = isMainAxisRow ? ownerWidth : ownerHeight;
 
-  float childWidth;
-  float childHeight;
-  YGMeasureMode childWidthMeasureMode;
-  YGMeasureMode childHeightMeasureMode;
-
-  const YGFloatOptional resolvedFlexBasis =
-      YGResolveValue(child->resolveFlexBasisPtr(), mainAxisownerSize);
-  const bool isRowStyleDimDefined =
-      YGNodeIsStyleDimDefined(child, YGFlexDirectionRow, ownerWidth);
-  const bool isColumnStyleDimDefined =
-      YGNodeIsStyleDimDefined(child, YGFlexDirectionColumn, ownerHeight);
+  const YGFloatOptional resolvedFlexBasis = YGResolveValue(child->resolveFlexBasisPtr(), mainAxisownerSize);
+  const bool isRowStyleDimDefined = YGNodeIsStyleDimDefined(child, YGFlexDirectionRow, ownerWidth);
+  const bool isColumnStyleDimDefined = YGNodeIsStyleDimDefined(child, YGFlexDirectionColumn, ownerHeight);
 
   if (!resolvedFlexBasis.isUndefined() && !YGFloatIsUndefined(mainAxisSize)) {
     if (child->getLayout().computedFlexBasis.isUndefined() ||
@@ -1217,25 +1200,20 @@ static void YGNodeComputeFlexBasisForChild(
              child->getConfig(), YGExperimentalFeatureWebFlexBasis) &&
          child->getLayout().computedFlexBasisGeneration !=
              gCurrentGenerationCount)) {
-      const YGFloatOptional paddingAndBorder = YGFloatOptional(
-          YGNodePaddingAndBorderForAxis(child, mainAxis, ownerWidth));
+      const YGFloatOptional paddingAndBorder = child->getPaddingAndBorderForAxis(mainAxis, ownerWidth);
       child->setLayoutComputedFlexBasis(
           YGFloatOptionalMax(resolvedFlexBasis, paddingAndBorder));
     }
   } else if (isMainAxisRow && isRowStyleDimDefined) {
     // The width is definite, so use that as the flex basis.
-    const YGFloatOptional paddingAndBorder = YGFloatOptional(
-        YGNodePaddingAndBorderForAxis(child, YGFlexDirectionRow, ownerWidth));
+    const YGFloatOptional paddingAndBorder = child->getPaddingAndBorderForAxis(YGFlexDirectionRow, ownerWidth);
 
     child->setLayoutComputedFlexBasis(YGFloatOptionalMax(
-        YGResolveValue(
-            child->getResolvedDimension(YGDimensionWidth), ownerWidth),
+        YGResolveValue(child->getResolvedDimension(YGDimensionWidth), ownerWidth),
         paddingAndBorder));
   } else if (!isMainAxisRow && isColumnStyleDimDefined) {
     // The height is definite, so use that as the flex basis.
-    const YGFloatOptional paddingAndBorder =
-        YGFloatOptional(YGNodePaddingAndBorderForAxis(
-            child, YGFlexDirectionColumn, ownerWidth));
+      const YGFloatOptional paddingAndBorder = child->getPaddingAndBorderForAxis(YGFlexDirectionColumn, ownerWidth);
     child->setLayoutComputedFlexBasis(YGFloatOptionalMax(
         YGResolveValue(
             child->getResolvedDimension(YGDimensionHeight), ownerHeight),
@@ -1243,10 +1221,10 @@ static void YGNodeComputeFlexBasisForChild(
   } else {
     // Compute the flex basis and hypothetical main size (i.e. the clamped flex
     // basis).
-    childWidth = YGUndefined;
-    childHeight = YGUndefined;
-    childWidthMeasureMode = YGMeasureModeUndefined;
-    childHeightMeasureMode = YGMeasureModeUndefined;
+      float childWidth = YGUndefined;
+      float childHeight = YGUndefined;
+      YGMeasureMode childWidthMeasureMode = YGMeasureModeUndefined;
+      YGMeasureMode childHeightMeasureMode = YGMeasureModeUndefined;
 
     auto marginRow =
         child->getMarginForAxis(YGFlexDirectionRow, ownerWidth).unwrap();
@@ -1370,7 +1348,7 @@ static void YGNodeComputeFlexBasisForChild(
 
     child->setLayoutComputedFlexBasis(YGFloatOptional(YGFloatMax(
         child->getLayout().measuredDimensions[dim[mainAxis]],
-        YGNodePaddingAndBorderForAxis(child, mainAxis, ownerWidth))));
+        child->getPaddingAndBorderForAxis(mainAxis, ownerWidth).unwrap())));
   }
   child->setLayoutComputedFlexBasisGeneration(gCurrentGenerationCount);
 }
@@ -1577,8 +1555,8 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
     const float ownerHeight) {
     YGAssertWithNode(node, node->hasMeasureFunc(), "Expected node to have custom measure function");
 
-    const float paddingAndBorderAxisRow = YGNodePaddingAndBorderForAxis(node, YGFlexDirectionRow, availableWidth);
-    const float paddingAndBorderAxisColumn = YGNodePaddingAndBorderForAxis(node, YGFlexDirectionColumn, availableWidth);
+    const float paddingAndBorderAxisRow = node->getPaddingAndBorderForAxis(YGFlexDirectionRow, availableWidth).unwrap();
+    const float paddingAndBorderAxisColumn = node->getPaddingAndBorderForAxis(YGFlexDirectionColumn, availableWidth).unwrap();
     const float marginAxisRow = node->getMarginForAxis(YGFlexDirectionRow, availableWidth).unwrap();
     const float marginAxisColumn = node->getMarginForAxis(YGFlexDirectionColumn, availableWidth).unwrap();
 
@@ -1656,8 +1634,8 @@ static void YGNodeEmptyContainerSetMeasuredDimensions(
     const float ownerWidth,
     const float ownerHeight) {
     
-    const float paddingAndBorderAxisRow = YGNodePaddingAndBorderForAxis(node, YGFlexDirectionRow, ownerWidth);
-    const float paddingAndBorderAxisColumn = YGNodePaddingAndBorderForAxis(node, YGFlexDirectionColumn, ownerWidth);
+    const float paddingAndBorderAxisRow = node->getPaddingAndBorderForAxis(YGFlexDirectionRow, ownerWidth).unwrap();
+    const float paddingAndBorderAxisColumn = node->getPaddingAndBorderForAxis(YGFlexDirectionColumn, ownerWidth).unwrap();
     const float marginAxisRow = node->getMarginForAxis(YGFlexDirectionRow, ownerWidth).unwrap();
     const float marginAxisColumn = node->getMarginForAxis(YGFlexDirectionColumn, ownerWidth).unwrap();
 
@@ -1752,45 +1730,6 @@ static void YGZeroOutLayoutRecursivly(
       YGZeroOutLayoutRecursivly);
 }
 
-static float YGNodeCalculateAvailableInnerDim(
-    const YGNodeRef node,
-    YGFlexDirection axis,
-    float availableDim,
-    float ownerDim) {
-  YGFlexDirection direction =
-      YGFlexDirectionIsRow(axis) ? YGFlexDirectionRow : YGFlexDirectionColumn;
-  YGDimension dimension =
-      YGFlexDirectionIsRow(axis) ? YGDimensionWidth : YGDimensionHeight;
-
-  const float margin = node->getMarginForAxis(direction, ownerDim).unwrap();
-  const float paddingAndBorder =
-      YGNodePaddingAndBorderForAxis(node, direction, ownerDim);
-
-  float availableInnerDim = availableDim - margin - paddingAndBorder;
-  // Max dimension overrides predefined dimension value; Min dimension in turn
-  // overrides both of the above
-  if (!YGFloatIsUndefined(availableInnerDim)) {
-    // We want to make sure our available height does not violate min and max
-    // constraints
-    const YGFloatOptional minDimensionOptional =
-        YGResolveValue(node->getStyle().minDimensions[dimension], ownerDim);
-    const float minInnerDim = minDimensionOptional.isUndefined()
-        ? 0.0f
-        : minDimensionOptional.unwrap() - paddingAndBorder;
-
-    const YGFloatOptional maxDimensionOptional =
-        YGResolveValue(node->getStyle().maxDimensions[dimension], ownerDim);
-
-    const float maxInnerDim = maxDimensionOptional.isUndefined()
-        ? FLT_MAX
-        : maxDimensionOptional.unwrap() - paddingAndBorder;
-    availableInnerDim =
-        YGFloatMax(YGFloatMin(availableInnerDim, maxInnerDim), minInnerDim);
-  }
-
-  return availableInnerDim;
-}
-
 static float YGNodeComputeFlexBasisForChildren(
     const YGNodeRef node,
     const float availableInnerWidth,
@@ -1802,77 +1741,73 @@ static float YGNodeComputeFlexBasisForChildren(
     const YGConfigRef config,
     bool performLayout,
     YGMarkerLayoutData& layoutMarkerData) {
-  float totalOuterFlexBasis = 0.0f;
-  YGNodeRef singleFlexChild = nullptr;
-  YGVector children = node->getChildren();
-  YGMeasureMode measureModeMainDim =
-      YGFlexDirectionIsRow(mainAxis) ? widthMeasureMode : heightMeasureMode;
+    float totalOuterFlexBasis = 0.0f;
+    YGNodeRef singleFlexChild = nullptr;
+    YGVector children = node->getChildren();
+    YGMeasureMode measureModeMainDim = YGFlexDirectionIsRow(mainAxis) ? widthMeasureMode : heightMeasureMode;
   // If there is only one child with flexGrow + flexShrink it means we can set
   // the computedFlexBasis to 0 instead of measuring and shrinking / flexing the
   // child to exactly match the remaining space
-  if (measureModeMainDim == YGMeasureModeExactly) {
-    for (auto child : children) {
-      if (child->isNodeFlexible()) {
-        if (singleFlexChild != nullptr ||
-            YGFloatsEqual(child->resolveFlexGrow(), 0.0f) ||
-            YGFloatsEqual(child->resolveFlexShrink(), 0.0f)) {
-          // There is already a flexible child, or this flexible child doesn't
-          // have flexGrow and flexShrink, abort
-          singleFlexChild = nullptr;
-          break;
-        } else {
-          singleFlexChild = child;
+    if (measureModeMainDim == YGMeasureModeExactly) {
+        for (auto child : children) {
+            if (child->isNodeFlexible()) {
+                if (singleFlexChild != nullptr ||
+                    YGFloatsEqual(child->resolveFlexGrow(), 0.0f) ||
+                    YGFloatsEqual(child->resolveFlexShrink(), 0.0f)) {
+                    // There is already a flexible child, or this flexible child doesn't
+                    // have flexGrow and flexShrink, abort
+                    singleFlexChild = nullptr;
+                    break;
+                } else {
+                    singleFlexChild = child;
+                }
+            }
         }
-      }
-    }
-  }
-
-  for (auto child : children) {
-    child->resolveDimension();
-    if (child->getStyle().display == YGDisplayNone) {
-      YGZeroOutLayoutRecursivly(child);
-      child->setHasNewLayout(true);
-      child->setDirty(false);
-      continue;
-    }
-    if (performLayout) {
-      // Set the initial position (relative to the owner).
-      const YGDirection childDirection = child->resolveDirection(direction);
-      const float mainDim = YGFlexDirectionIsRow(mainAxis)
-          ? availableInnerWidth
-          : availableInnerHeight;
-      const float crossDim = YGFlexDirectionIsRow(mainAxis)
-          ? availableInnerHeight
-          : availableInnerWidth;
-      child->setPosition(
-          childDirection, mainDim, crossDim, availableInnerWidth);
     }
 
-    if (child->getStyle().positionType == YGPositionTypeAbsolute) {
-      continue;
-    }
-    if (child == singleFlexChild) {
-      child->setLayoutComputedFlexBasisGeneration(gCurrentGenerationCount);
-      child->setLayoutComputedFlexBasis(YGFloatOptional(0));
-    } else {
-      YGNodeComputeFlexBasisForChild(
-          node,
-          child,
-          availableInnerWidth,
-          widthMeasureMode,
-          availableInnerHeight,
-          availableInnerWidth,
-          availableInnerHeight,
-          heightMeasureMode,
-          direction,
-          config,
-          layoutMarkerData);
-    }
+    for (auto child : children) {
+        child->resolveDimension();
+        if (child->getStyle().display == YGDisplayNone) {
+            YGZeroOutLayoutRecursivly(child);
+            child->setHasNewLayout(true);
+            child->setDirty(false);
+            continue;
+        }
+        if (performLayout) {
+            // Set the initial position (relative to the owner).
+            const YGDirection childDirection = child->resolveDirection(direction);
+            const float mainDim = YGFlexDirectionIsRow(mainAxis)
+            ? availableInnerWidth
+            : availableInnerHeight;
+            const float crossDim = YGFlexDirectionIsRow(mainAxis)
+              ? availableInnerHeight
+              : availableInnerWidth;
+          child->setPosition(
+              childDirection, mainDim, crossDim, availableInnerWidth);
+        }
 
-    totalOuterFlexBasis +=
-        (child->getLayout().computedFlexBasis +
-         child->getMarginForAxis(mainAxis, availableInnerWidth))
-            .unwrap();
+        if (child->getStyle().positionType == YGPositionTypeAbsolute) {
+          continue;
+        }
+        if (child == singleFlexChild) {
+          child->setLayoutComputedFlexBasisGeneration(gCurrentGenerationCount);
+          child->setLayoutComputedFlexBasis(YGFloatOptional(0));
+        } else {
+          YGNodeComputeFlexBasisForChild(
+              node,
+              child,
+              availableInnerWidth,
+              widthMeasureMode,
+              availableInnerHeight,
+              availableInnerWidth,
+              availableInnerHeight,
+              heightMeasureMode,
+              direction,
+              config,
+              layoutMarkerData);
+        }
+
+    totalOuterFlexBasis += (child->getLayout().computedFlexBasis + child->getMarginForAxis(mainAxis, availableInnerWidth)).unwrap();
   }
 
   return totalOuterFlexBasis;
@@ -1900,13 +1835,13 @@ static YGCollectFlexItemsRowValues YGCalculateCollectFlexItemsRowValues(
 
   // Add items to the current line until it's full or we run out of items.
   uint32_t endOfLineIndex = startOfLineIndex;
-  for (; endOfLineIndex < node->getChildren().size(); endOfLineIndex++) {
-    const YGNodeRef child = node->getChild(endOfLineIndex);
-    if (child->getStyle().display == YGDisplayNone ||
-        child->getStyle().positionType == YGPositionTypeAbsolute) {
-      continue;
-    }
-    child->setLineIndex(lineCount);
+    for (; endOfLineIndex < node->getChildren().size(); endOfLineIndex++) {
+        const YGNodeRef child = node->getChild(endOfLineIndex);
+        //跳过绝对布局的子结点
+        if (child->getStyle().display == YGDisplayNone || child->getStyle().positionType == YGPositionTypeAbsolute) {
+            continue;
+        }
+        child->setLineIndex(lineCount);
     const float childMarginMainAxis =
         child->getMarginForAxis(mainAxis, availableInnerWidth).unwrap();
     const float flexBasisWithMinAndMaxConstraints =
@@ -2063,7 +1998,7 @@ static float YGDistributeFreeSpaceSecondPass(
       childCrossMeasureMode = YGMeasureModeExactly;
 
       childCrossSize += marginCross;
-    } else if (
+    } else if ( //绿色View的高度就是从这里算出来的
         !YGFloatIsUndefined(availableInnerCrossDim) &&
         !YGNodeIsStyleDimDefined(
             currentRelativeChild, crossAxis, availableInnerCrossDim) &&
@@ -2132,6 +2067,9 @@ static float YGDistributeFreeSpaceSecondPass(
 
     // Recursively call the layout algorithm for this child with the updated
     // main size.
+      //递归关键❕❕
+      //到这里的时候，子结点的宽高是什么已经确定下来了，之后几步设置justify和align的，基本不影响了。除了align-strech，不过那里也会再递归调用
+      //之后相当于把这个子结点当作根结点，继续计算其内部的结点位置。
     YGLayoutNodeInternal(
         currentRelativeChild,
         childWidth,
@@ -2151,7 +2089,7 @@ static float YGDistributeFreeSpaceSecondPass(
   }
   return deltaFreeSpace;
 }
-
+//填充grow剩余空间时，先把那些触发了min和max的结点去掉
 // It distributes the free space to the flexible items.For those flexible items
 // whose min and max constraints are triggered, those flex item's clamped size
 // is removed from the remaingfreespace.
@@ -2319,9 +2257,9 @@ static void YGJustifyMainAxis(
     const float availableInnerCrossDim,
     const float availableInnerWidth,
     const bool performLayout) {
-  const YGStyle& style = node->getStyle();
-  const float leadingPaddingAndBorderMain =
-      node->getLeadingPaddingAndBorder(mainAxis, ownerWidth).unwrap();
+    
+    const YGStyle& style = node->getStyle();
+    const float leadingPaddingAndBorderMain = node->getLeadingPaddingAndBorder(mainAxis, ownerWidth).unwrap();
   const float trailingPaddingAndBorderMain =
       node->getTrailingPaddingAndBorder(mainAxis, ownerWidth).unwrap();
   // If we are using "at most" rules in the main axis, make sure that
@@ -2447,7 +2385,7 @@ static void YGJustifyMainAxis(
               numberOfAutoMarginsOnCurrentLine;
         }
 
-        if (performLayout) {
+        if (performLayout) { //根据justify更新了位置
           child->setLayoutPosition(
               childLayout.position[pos[mainAxis]] +
                   collectedFlexItemsValues.mainDim,
@@ -2615,7 +2553,7 @@ static void YGNodelayoutImpl(
     
     //YGStyle被当做一个readonly的对象了，布局时，将属性重新写到YGLayout中
 
-  // Set the resolved resolution in the node's layout.
+    // Set the resolved resolution in the node's layout.
     const YGDirection direction = node->resolveDirection(ownerDirection);
     node->setLayoutDirection(direction);
 
@@ -2683,83 +2621,58 @@ static void YGNodelayoutImpl(
         return;
     }
 
-  // At this point we know we're going to perform work. Ensure that each child
-  // has a mutable copy.
-  node->cloneChildrenIfNeeded();
-  // Reset layout flags, as they could have changed.
-  node->setLayoutHadOverflow(false);
+    // At this point we know we're going to perform work. Ensure that each child
+    // has a mutable copy.
+    node->cloneChildrenIfNeeded();
+    // Reset layout flags, as they could have changed.
+    node->setLayoutHadOverflow(false);
 
-  // STEP 1: CALCULATE VALUES FOR REMAINDER OF ALGORITHM
-  const YGFlexDirection mainAxis =
-      YGResolveFlexDirection(node->getStyle().flexDirection, direction);
-  const YGFlexDirection crossAxis = YGFlexDirectionCross(mainAxis, direction);
-  const bool isMainAxisRow = YGFlexDirectionIsRow(mainAxis);
-  const bool isNodeFlexWrap = node->getStyle().flexWrap != YGWrapNoWrap;
+    // STEP 1: CALCULATE VALUES FOR REMAINDER OF ALGORITHM
+    // 第一步，计算出主轴和交叉轴的方向、ownerSize、sizing模式
+    const YGFlexDirection mainAxis = YGResolveFlexDirection(node->getStyle().flexDirection, direction);
+    const YGFlexDirection crossAxis = YGFlexDirectionCross(mainAxis, direction);
+    const bool isMainAxisRow = YGFlexDirectionIsRow(mainAxis);
+    const bool isNodeFlexWrap = node->getStyle().flexWrap != YGWrapNoWrap;
 
-  const float mainAxisownerSize = isMainAxisRow ? ownerWidth : ownerHeight;
-  const float crossAxisownerSize = isMainAxisRow ? ownerHeight : ownerWidth;
+    const float mainAxisownerSize = isMainAxisRow ? ownerWidth : ownerHeight;
+    const float crossAxisownerSize = isMainAxisRow ? ownerHeight : ownerWidth;
 
-  const float leadingPaddingAndBorderCross =
-      node->getLeadingPaddingAndBorder(crossAxis, ownerWidth).unwrap();
-  const float paddingAndBorderAxisMain =
-      YGNodePaddingAndBorderForAxis(node, mainAxis, ownerWidth);
-  const float paddingAndBorderAxisCross =
-      YGNodePaddingAndBorderForAxis(node, crossAxis, ownerWidth);
+    const float leadingPaddingAndBorderCross = node->getLeadingPaddingAndBorder(crossAxis, ownerWidth).unwrap();
+    const float paddingAndBorderAxisMain = node->getPaddingAndBorderForAxis(mainAxis, ownerWidth).unwrap();
+    const float paddingAndBorderAxisCross = node->getPaddingAndBorderForAxis(crossAxis, ownerWidth).unwrap();
 
-  YGMeasureMode measureModeMainDim =
-      isMainAxisRow ? widthMeasureMode : heightMeasureMode;
-  YGMeasureMode measureModeCrossDim =
-      isMainAxisRow ? heightMeasureMode : widthMeasureMode;
+    YGMeasureMode measureModeMainDim = isMainAxisRow ? widthMeasureMode : heightMeasureMode;
+    YGMeasureMode measureModeCrossDim = isMainAxisRow ? heightMeasureMode : widthMeasureMode;
 
-  const float paddingAndBorderAxisRow =
-      isMainAxisRow ? paddingAndBorderAxisMain : paddingAndBorderAxisCross;
-  const float paddingAndBorderAxisColumn =
-      isMainAxisRow ? paddingAndBorderAxisCross : paddingAndBorderAxisMain;
+    const float paddingAndBorderAxisRow = isMainAxisRow ? paddingAndBorderAxisMain : paddingAndBorderAxisCross;
+    const float paddingAndBorderAxisColumn = isMainAxisRow ? paddingAndBorderAxisCross : paddingAndBorderAxisMain;
 
-  const float marginAxisRow =
-      node->getMarginForAxis(YGFlexDirectionRow, ownerWidth).unwrap();
-  const float marginAxisColumn =
-      node->getMarginForAxis(YGFlexDirectionColumn, ownerWidth).unwrap();
+    const float marginAxisRow = node->getMarginForAxis(YGFlexDirectionRow, ownerWidth).unwrap();
+    const float marginAxisColumn = node->getMarginForAxis(YGFlexDirectionColumn, ownerWidth).unwrap();
 
-  const float minInnerWidth =
-      YGResolveValue(
-          node->getStyle().minDimensions[YGDimensionWidth], ownerWidth)
-          .unwrap() -
-      paddingAndBorderAxisRow;
-  const float maxInnerWidth =
-      YGResolveValue(
-          node->getStyle().maxDimensions[YGDimensionWidth], ownerWidth)
-          .unwrap() -
-      paddingAndBorderAxisRow;
-  const float minInnerHeight =
-      YGResolveValue(
-          node->getStyle().minDimensions[YGDimensionHeight], ownerHeight)
-          .unwrap() -
-      paddingAndBorderAxisColumn;
-  const float maxInnerHeight =
-      YGResolveValue(
-          node->getStyle().maxDimensions[YGDimensionHeight], ownerHeight)
-          .unwrap() -
-      paddingAndBorderAxisColumn;
+    const float minInnerWidth =
+      YGResolveValue(node->getStyle().minDimensions[YGDimensionWidth], ownerWidth).unwrap() - paddingAndBorderAxisRow;
+    const float maxInnerWidth =
+      YGResolveValue(node->getStyle().maxDimensions[YGDimensionWidth], ownerWidth).unwrap() - paddingAndBorderAxisRow;
+    const float minInnerHeight =
+      YGResolveValue(node->getStyle().minDimensions[YGDimensionHeight], ownerHeight).unwrap() - paddingAndBorderAxisColumn;
+    const float maxInnerHeight =
+      YGResolveValue(node->getStyle().maxDimensions[YGDimensionHeight], ownerHeight).unwrap() - paddingAndBorderAxisColumn;
 
-  const float minInnerMainDim = isMainAxisRow ? minInnerWidth : minInnerHeight;
-  const float maxInnerMainDim = isMainAxisRow ? maxInnerWidth : maxInnerHeight;
+    const float minInnerMainDim = isMainAxisRow ? minInnerWidth : minInnerHeight;
+    const float maxInnerMainDim = isMainAxisRow ? maxInnerWidth : maxInnerHeight;
 
-  // STEP 2: DETERMINE AVAILABLE SIZE IN MAIN AND CROSS DIRECTIONS
+    // STEP 2: DETERMINE AVAILABLE SIZE IN MAIN AND CROSS DIRECTIONS
 
-  float availableInnerWidth = YGNodeCalculateAvailableInnerDim(
-      node, YGFlexDirectionRow, availableWidth, ownerWidth);
-  float availableInnerHeight = YGNodeCalculateAvailableInnerDim(
-      node, YGFlexDirectionColumn, availableHeight, ownerHeight);
+    float availableInnerWidth = YGNodeCalculateAvailableInnerDim(node, YGFlexDirectionRow, availableWidth, ownerWidth);
+    float availableInnerHeight = YGNodeCalculateAvailableInnerDim(node, YGFlexDirectionColumn, availableHeight, ownerHeight);
 
-  float availableInnerMainDim =
-      isMainAxisRow ? availableInnerWidth : availableInnerHeight;
-  const float availableInnerCrossDim =
-      isMainAxisRow ? availableInnerHeight : availableInnerWidth;
+    float availableInnerMainDim = isMainAxisRow ? availableInnerWidth : availableInnerHeight;
+    float availableInnerCrossDim = isMainAxisRow ? availableInnerHeight : availableInnerWidth;
 
-  // STEP 3: DETERMINE FLEX BASIS FOR EACH ITEM
-
-  float totalOuterFlexBasis = YGNodeComputeFlexBasisForChildren(
+    // STEP 3: DETERMINE FLEX BASIS FOR EACH ITEM
+    // 算出了子结点整体的Size，看看是否overflow
+    float totalOuterFlexBasis = YGNodeComputeFlexBasisForChildren(
       node,
       availableInnerWidth,
       availableInnerHeight,
@@ -2771,31 +2684,30 @@ static void YGNodelayoutImpl(
       performLayout,
       layoutMarkerData);
 
-  const bool flexBasisOverflows = measureModeMainDim == YGMeasureModeUndefined
+    const bool flexBasisOverflows = measureModeMainDim == YGMeasureModeUndefined
       ? false
       : totalOuterFlexBasis > availableInnerMainDim;
-  if (isNodeFlexWrap && flexBasisOverflows &&
-      measureModeMainDim == YGMeasureModeAtMost) {
-    measureModeMainDim = YGMeasureModeExactly;
-  }
-  // STEP 4: COLLECT FLEX ITEMS INTO FLEX LINES
+    if (isNodeFlexWrap && flexBasisOverflows && measureModeMainDim == YGMeasureModeAtMost) {
+        measureModeMainDim = YGMeasureModeExactly;
+    }
+    
+    // STEP 4: COLLECT FLEX ITEMS INTO FLEX LINES
 
-  // Indexes of children that represent the first and last items in the line.
-  uint32_t startOfLineIndex = 0;
-  uint32_t endOfLineIndex = 0;
+    // Indexes of children that represent the first and last items in the line.
+    uint32_t startOfLineIndex = 0;
+    uint32_t endOfLineIndex = 0;
 
-  // Number of lines.
-  uint32_t lineCount = 0;
+    // Number of lines.
+    uint32_t lineCount = 0;
 
-  // Accumulated cross dimensions of all lines so far.
-  float totalLineCrossDim = 0;
+    // Accumulated cross dimensions of all lines so far.
+    float totalLineCrossDim = 0;
 
-  // Max main dimension of all the lines.
-  float maxLineMainDim = 0;
-  YGCollectFlexItemsRowValues collectedFlexItemsValues;
-  for (; endOfLineIndex < childCount;
-       lineCount++, startOfLineIndex = endOfLineIndex) {
-    collectedFlexItemsValues = YGCalculateCollectFlexItemsRowValues(
+    // Max main dimension of all the lines.
+    float maxLineMainDim = 0;
+    YGCollectFlexItemsRowValues collectedFlexItemsValues;
+    for (; endOfLineIndex < childCount; lineCount++, startOfLineIndex = endOfLineIndex) {
+        collectedFlexItemsValues = YGCalculateCollectFlexItemsRowValues(
         node,
         ownerDirection,
         mainAxisownerSize,
@@ -2803,12 +2715,11 @@ static void YGNodelayoutImpl(
         availableInnerMainDim,
         startOfLineIndex,
         lineCount);
-    endOfLineIndex = collectedFlexItemsValues.endOfLineIndex;
+        endOfLineIndex = collectedFlexItemsValues.endOfLineIndex;
 
     // If we don't need to measure the cross axis, we can skip the entire flex
     // step.
-    const bool canSkipFlex =
-        !performLayout && measureModeCrossDim == YGMeasureModeExactly;
+    const bool canSkipFlex = !performLayout && measureModeCrossDim == YGMeasureModeExactly;
 
     // STEP 5: RESOLVING FLEXIBLE LENGTHS ON MAIN AXIS
     // Calculate the remaining available space that needs to be allocated. If
@@ -2820,13 +2731,11 @@ static void YGNodelayoutImpl(
     // violate min and max
     if (measureModeMainDim != YGMeasureModeExactly) {
       if (!YGFloatIsUndefined(minInnerMainDim) &&
-          collectedFlexItemsValues.sizeConsumedOnCurrentLine <
-              minInnerMainDim) {
+          collectedFlexItemsValues.sizeConsumedOnCurrentLine < minInnerMainDim) {
         availableInnerMainDim = minInnerMainDim;
       } else if (
           !YGFloatIsUndefined(maxInnerMainDim) &&
-          collectedFlexItemsValues.sizeConsumedOnCurrentLine >
-              maxInnerMainDim) {
+          collectedFlexItemsValues.sizeConsumedOnCurrentLine > maxInnerMainDim) {
         availableInnerMainDim = maxInnerMainDim;
       } else {
         if (((YGFloatIsUndefined(
@@ -2853,8 +2762,7 @@ static void YGNodelayoutImpl(
       // based on its content. sizeConsumedOnCurrentLine is negative which means
       // the node will allocate 0 points for its content. Consequently,
       // remainingFreeSpace is 0 - sizeConsumedOnCurrentLine.
-      collectedFlexItemsValues.remainingFreeSpace =
-          -collectedFlexItemsValues.sizeConsumedOnCurrentLine;
+      collectedFlexItemsValues.remainingFreeSpace = -collectedFlexItemsValues.sizeConsumedOnCurrentLine;
     }
 
     if (!canSkipFlex) {
@@ -2875,9 +2783,7 @@ static void YGNodelayoutImpl(
           layoutMarkerData);
     }
 
-    node->setLayoutHadOverflow(
-        node->getLayout().hadOverflow |
-        (collectedFlexItemsValues.remainingFreeSpace < 0));
+    node->setLayoutHadOverflow(node->getLayout().hadOverflow | (collectedFlexItemsValues.remainingFreeSpace < 0));
 
     // STEP 6: MAIN-AXIS JUSTIFICATION & CROSS-AXIS SIZE DETERMINATION
 
@@ -3575,7 +3481,7 @@ bool YGNodeCanUseCachedMeasurement(
   return widthIsCompatible && heightIsCompatible;
 }
 
-//
+// layout前进行缓存检查，真正实现在YGNodelayoutImpl里面
 // This is a wrapper around the YGNodelayoutImpl function. It determines whether
 // the layout request is redundant and can be skipped.
 //
@@ -3596,9 +3502,9 @@ bool YGLayoutNodeInternal(
     const char* reason,
     const YGConfigRef config,
     YGMarkerLayoutData& layoutMarkerData) {
-  YGLayout* layout = &node->getLayout();
+    YGLayout* layout = &node->getLayout();
 
-  gDepth++;
+    gDepth++;
 
   const bool needToVisitNode =
       (node->isDirty() && layout->generationCount != gCurrentGenerationCount) ||

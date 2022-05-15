@@ -57,7 +57,7 @@ public:
 
   YGStyle()
       : direction(YGDirectionInherit),
-        flexDirection(YGFlexDirectionColumn),
+        flexDirection(YGFlexDirectionRow),
         justifyContent(YGJustifyFlexStart),
         alignContent(YGAlignFlexStart),
         alignItems(YGAlignStretch),

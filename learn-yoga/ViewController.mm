@@ -31,39 +31,46 @@
     view1.backgroundColor = UIColor.redColor;
     [self.view addSubview:view1];
     
+        UIView *view2 = [[UIView alloc] init];
+        view2.backgroundColor = UIColor.greenColor;
+        [view1 addSubview:view2];
+    
+            UIView *view4 = [[UIView alloc] init];
+            view4.backgroundColor = UIColor.whiteColor;
+            [view2 addSubview:view4];
+    
+        UIView *view3 = [[UIView alloc] init];
+        view3.backgroundColor = UIColor.blueColor;
+        [view1 addSubview:view3];
+    
     [view1 configureLayoutWithBlock:^(YGLayout * _Nonnull layout) {
         layout.isEnabled = YES;
-        layout.flexDirection = YGFlexDirectionRow;
-        layout.flexWrap = YGWrapWrap;
         layout.width = YGPointValue(200);
         layout.height = YGPointValue(100);
-        layout.marginTop = YGPointValue(50);
-        layout.paddingBottom = YGPointValue(50);
+        layout.marginTop = YGPointValue(80);
         layout.marginHorizontal = YGPointValue(100);
+        layout.paddingBottom = YGPointValue(10);
         layout.justifyContent = YGJustifyFlexEnd;
     }];
-    
-    UIView *view2 = [[UIView alloc] init];
-    view2.backgroundColor = UIColor.greenColor;
-    [view1 addSubview:view2];
-    
     [view2 configureLayoutWithBlock:^(YGLayout * _Nonnull layout) {
         layout.isEnabled = YES;
-        layout.width = YGPointValue(20);
-        layout.paddingHorizontal = YGPointValue(10);
-        layout.height = YGPointValue(20);
+        layout.width = YGPointValue(60);
+        layout.padding = YGPointValue(8);
         layout.marginHorizontal = YGPointValue(10);
     }];
-    
-    UIView *view3 = [[UIView alloc] init];
-    view3.backgroundColor = UIColor.blueColor;
-    [view1 addSubview:view3];
-    
     [view3 configureLayoutWithBlock:^(YGLayout * _Nonnull layout) {
+        layout.isEnabled = YES;
+        layout.width = YGPointValue(30);
+        layout.height = YGPointValue(30);
+        layout.marginHorizontal = YGPointValue(12);
+        layout.alignSelf = YGAlignCenter;
+    }];
+    [view4 configureLayoutWithBlock:^(YGLayout * _Nonnull layout) {
         layout.isEnabled = YES;
         layout.width = YGPointValue(20);
         layout.height = YGPointValue(20);
-        layout.marginHorizontal = YGPointValue(10);
+        layout.margin = YGPointValue(5);
+        layout.flexGrow = 1;
     }];
     
     [view1.yoga applyLayout];

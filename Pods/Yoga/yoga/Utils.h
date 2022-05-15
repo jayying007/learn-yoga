@@ -140,3 +140,14 @@ inline YGFloatOptional YGResolveValueMargin(
     const float ownerSize) {
   return value.isAuto() ? YGFloatOptional{0} : YGResolveValue(value, ownerSize);
 }
+
+/// 计算出InnerSize，受min和max的限制
+/// @param node <#node description#>
+/// @param axis 轴
+/// @param availableDim 可用size，为marign+padding+border+inner
+/// @param ownerDim 百分比计算时用到
+float YGNodeCalculateAvailableInnerDim(
+    const YGNodeRef node,
+    YGFlexDirection axis,
+    float availableDim,
+    float ownerDim);
